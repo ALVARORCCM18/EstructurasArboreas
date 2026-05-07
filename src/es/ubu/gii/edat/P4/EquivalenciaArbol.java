@@ -1,0 +1,182 @@
+package es.ubu.gii.edat.P4;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+/**
+ * Implementación de una estructura de clases de equivalencia basada en un árbol.
+ * 
+ * Esta clase utiliza una estructura de árbol (Union-Find) para mantener particiones de elementos
+ * en clases de equivalencia. Cada elemento apunta a su padre en el árbol hasta llegar a la raíz,
+ * que representa el representante de la clase.
+ * 
+ * @param <E> el tipo de elementos en las clases de equivalencia
+ * @author EDAT
+ * @version 1.0
+ */
+public class EquivalenciaArbol<E> implements ClasesEquivalencia<E> {
+
+	// Mapa que almacena la relación padre-hijo entre elementos
+	// Clave: elemento, Valor: padre del elemento (null si es raíz)
+	private Map<E, E> padres;
+
+	/**
+	 * Constructor que inicializa la estructura de clases de equivalencia vacía.
+	 */
+	public EquivalenciaArbol() {
+		// Inicializa el mapa de padres como un HashMap vacío
+		this.padres = new HashMap<>();
+	}
+
+	/**
+	 * Inserta un elemento en una clase de equivalencia.
+	 * 
+	 * @param clase el representante de la clase
+	 * @param elemento el elemento a insertar
+	 */
+	@Override
+	public void insertar(E clase, E elemento) {
+		// Asigna el elemento al padre especificado (representante de clase)
+		padres.put(elemento, clase);
+
+	}
+
+	/**
+	 * Elimina un elemento de la estructura de clases de equivalencia.
+	 * 
+	 * Reasigna todos los hijos del elemento eliminado a su padre, o si es una raíz,
+	 * los asigna al primer hijo encontrado.
+	 * 
+	 * @param elemento el elemento a eliminar
+	 * @return la clase a la que pertenecía el elemento eliminado
+	 */
+	@Override
+	public E eliminar(E elemento) {
+		// Obtiene la clase (raíz) a la que pertenecía el elemento
+		E raiz = clasePertenencia(elemento);
+		// Obtiene el padre directo del elemento a eliminar
+		E padre = padres.get(elemento);
+		// Variable para almacenar la nueva raíz si el elemento es una raíz
+		E nuevaRaiz = null;
+
+		// Itera sobre todos los pares elemento-padre en el mapa
+		for (Entry<E, E> parActual : padres.entrySet()) {
+			// Si el elemento actual es padre del elemento a eliminar
+			if (elemento.equals(parActual.getValue())) {
+
+				// Si el elemento a eliminar tiene un padre, lo asignamos como nuevo padre
+				if (padre != null) {
+					parActual.setValue(padre);
+				} else {
+					// Si el elemento era una raíz (no tiene padre)
+					if (nuevaRaiz == null) {
+						// El primer hijo se convierte en la nueva raíz
+						nuevaRaiz = parActual.getKey();
+						parActual.setValue(null);
+					} else {
+						// Los demás hijos apuntan a la nueva raíz
+						parActual.setValue(nuevaRaiz);
+					}
+				}
+
+			}
+		}
+		// Elimina el elemento del mapa
+		padres.remove(elemento);
+		// Retorna la clase a la que pertenecía
+		return raiz;
+	}
+
+	/**
+	 * Obtiene el representante (raíz) de la clase a la que pertenece un elemento.
+	 * 
+	 * @param elemento el elemento del cual obtener su clase
+	 * @return el representante de la clase, o null si el elemento no existe
+	 */
+	@Override
+	public E clasePertenencia(E elemento) {
+		// Si el elemento no está en la estructura, retorna null
+		if (!padres.containsKey(elemento)) {
+			return null;
+		}
+		// Obtiene el padre del elemento
+		E raiz = padres.get(elemento);
+		// Si el padre es null, el elemento es la raíz
+		if (raiz == null) {
+			return elemento;
+		}
+
+		// Sigue la cadena de padres hasta encontrar la raíz (padre null)
+		while (padres.get(raiz) != null) {
+			raiz = padres.get(raiz);
+		}
+		// Retorna la raíz encontrada
+		return raiz;
+	}
+
+	/**
+	 * Mezcla las clases de equivalencia de dos elementos.
+	 * 
+	 * Hace que la raíz de la clase del segundo elemento apunte a la raíz del primero,
+	 * fusionando así ambas clases.
+	 * 
+	 * @param elemento1 elemento cuya clase será el representante de la clase fusionada
+	 * @param elemento2 elemento cuya clase se fusionará con la del primer elemento
+	 * @return 1 si la mezcla fue exitosa, 0 si alguno de los elementos no existe
+	 */
+	@Override
+	public int mezclarClases(E elemento1, E elemento2) {
+		// Obtiene la raíz (representante) de la clase del primer elemento
+		E raizAsignada = clasePertenencia(elemento1);
+		// Obtiene la raíz (representante) de la clase del segundo elemento
+		E raizModificada = clasePertenencia(elemento2);
+		// Si alguno de los elementos no existe, no se puede mezclar
+		if (raizAsignada == null || raizModificada == null) {
+			return 0;
+		}
+		// Hace que la segunda raíz apunte a la primera raíz (mezcla las clases)
+		insertar(raizAsignada, raizModificada);
+		// Retorna 1 indicando que la mezcla fue exitosa
+		return 1;
+	}
+
+	/**
+	 * Obtiene todos los elementos que pertenecen a la misma clase de equivalencia.
+	 * 
+	 * @param elemento el elemento de referencia
+	 * @return un conjunto con todos los elementos de la misma clase
+	 */
+	@Override
+	public Set<E> elementosMismaClase(E elemento) {
+		// Crea un conjunto para almacenar los elementos de la misma clase
+		Set<E> conjuntoDeElementos = new HashSet<>();
+		// Obtiene la raíz (clase) del elemento de referencia
+		E raiz = clasePertenencia(elemento);
+
+		// Itera sobre todos los pares elemento-padre en el mapa
+		for (Entry<E, E> parActual : padres.entrySet()) {
+			// Si el elemento actual pertenece a la misma clase
+			if (clasePertenencia(parActual.getKey()).equals(raiz)) {
+				// Lo añade al conjunto resultado
+				conjuntoDeElementos.add(parActual.getKey());
+			}
+		}
+		// Retorna el conjunto con todos los elementos de la misma clase
+		return conjuntoDeElementos;
+	}
+
+	/**
+	 * Obtiene el número total de elementos en la estructura.
+	 * 
+	 * @return el número de elementos almacenados
+	 */
+	@Override
+	public int numElementos() {
+		// Retorna el tamaño del mapa (número de elementos almacenados)
+		return padres.size();
+	}
+
+}
