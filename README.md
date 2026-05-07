@@ -33,7 +33,7 @@ Notas y buenas prácticas
 - Para un proyecto a largo plazo, se recomienda usar Maven o Gradle para gestionar dependencias y tareas de build/ejecución.
 
 Contacto
-- Autor: ALVAR
+- Autor: ALVARO
 
 Licencia
 - Revisa la licencia del repositorio remoto o añade una si quieres compartirlo públicamente.
