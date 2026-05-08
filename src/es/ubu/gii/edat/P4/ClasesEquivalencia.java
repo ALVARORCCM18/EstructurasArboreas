@@ -10,9 +10,9 @@ import java.util.Set;
  * (representante). Dos elementos son equivalentes si pertenecen a la misma
  * clase.
  * 
- * https://es.wikipedia.org/wiki/Relaci%C3%B3n_de_equivalencia
- * 
- * @author bbaruque
+ * @author <a href="mailto:arc1049@alu.ubu.es">Alvaro Rodriguez Corral</a>
+ * @author <a href="mailto:aaa1061@alu.ubu.es">Alejandro Abad Arroyo</a>
+ * @version 1.0
  *
  * @param <E> tipo de los elementos gestionados
  */
